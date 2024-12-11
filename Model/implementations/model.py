@@ -5,7 +5,6 @@ from Model.abstractions.icursor import IModelCursor
 from Model.abstractions.itext import IModelText
 from Model.abstractions.isubject import IModelSubject
 
-
 class Model(ModelFacade):
     def __init__(self,
                  file: IModelFile,
