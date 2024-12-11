@@ -6,9 +6,10 @@ class  IModelText(ABC):
     def __init__(self):
         self.text: list[mystring.MyString] = [mystring.MyString("")]
         self.buffer: mystring.MyString = mystring.MyString("")
+        self.buffer_state: bool = False
 
     @abstractmethod
-    def search(self, input_data: str, direction: bool, start_x: int, start_y: int) -> list[int]:
+    def search(self, input_data: str, direction: int, start_x: int, start_y: int) -> list[int]:
         pass
 
     @abstractmethod

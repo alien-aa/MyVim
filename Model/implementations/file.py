@@ -8,10 +8,8 @@ from Model.abstractions.itext import IModelText
 class ModelFile(IModelFile):
     def __init__(self,
                  text: IModelText,
-                 name: str):
-        self.text = text
-        self.name = name
-        self.changed: bool = False
+                 name: str | None):
+        super().__init__(text, name)
 
 
     def open_file(self, name: str) -> None:

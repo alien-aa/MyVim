@@ -8,7 +8,7 @@ class ModelText(IModelText):
         super().__init__()
 
 
-    def search(self, input_data: str, direction: bool, start_x: int, start_y: int) -> list[int]:
+    def search(self, input_data: str, direction: int, start_x: int, start_y: int) -> list[int]:
         try:
             x, y = start_x, start_y
             if start_y >= len(self.text) or start_x >= self.text[start_y].size():
@@ -66,6 +66,7 @@ class ModelText(IModelText):
     def paste_new_string(self, line_num: int) -> bool:
         try:
             self.text.insert(line_num, mystring.MyString(self.buffer))
+            self.buffer_state = True
             return True
         except IndexError:
             return False
@@ -73,6 +74,7 @@ class ModelText(IModelText):
     def paste_in_string(self, sym_num: int, line_num: int) -> bool:
         try:
             self.text[line_num].insert(sym_num, self.buffer)
+            self.buffer_state = False
             return True
         except IndexError:
             return False
