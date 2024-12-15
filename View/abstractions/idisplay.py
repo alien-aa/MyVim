@@ -6,7 +6,11 @@ class IDisplay(ABC):
         pass
 
     @abstractmethod
-    def update_editor(self, text: list[str], cursor: list[int], new_text_flag: bool) -> None:
+    def update_text(self, line_num: int, text: str, changes_type: int) -> None:
+        pass
+
+    @abstractmethod
+    def update_cursor(self, new_pos: list[int]) -> None:
         pass
 
     @abstractmethod

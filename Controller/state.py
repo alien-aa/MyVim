@@ -38,14 +38,13 @@ class NavigationMode(ControllerState):
         return self.input_adapter.read_cmd()
 
     def handle_action(self, curr_smd: str) -> dict:
-        pass
+        return {}
 
     def show_state(self) -> None:
         self.input_adapter.state("Navigation&Edit")
 
     def clear_cmd(self):
         self.input_adapter.clear_cmd("")
-
 
 
 class SearchMode(ControllerState):
@@ -58,7 +57,7 @@ class SearchMode(ControllerState):
         return self.input_adapter.read_cmd()
 
     def handle_action(self, curr_smd: str) -> dict:
-        pass
+        return {}
 
     def show_state(self) -> None:
         self.input_adapter.state("Search")
@@ -77,7 +76,7 @@ class InputMode(ControllerState):
         return self.input_adapter.read_cmd()
 
     def handle_action(self, curr_smd: str) -> dict:
-        pass
+        return {}
 
     def show_state(self) -> None:
         self.input_adapter.state("Input")
@@ -96,7 +95,7 @@ class CommandMode(ControllerState):
         return self.input_adapter.read_cmd()
 
     def handle_action(self, curr_smd: str) -> dict:
-        pass
+        return {}
 
     def show_state(self) -> None:
         self.input_adapter.state("Command")
