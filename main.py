@@ -11,7 +11,7 @@ subject = ModelSubject()
 adapter = Adapter()
 subject.add_observer(View(adapter))
 text = ModelText()
-controller = Controller(Model(ModelFile(text, "None"), ModelCursor(), text, subject),
+controller = Controller(Model(ModelFile(text, ""), ModelCursor(), text, subject),
                         adapter,
                         {"dir": 1, "data": ""})
 controller.run()

@@ -94,7 +94,7 @@ class NavigationMode(ControllerState):
             self.model.move_cursor(direction=1, option=4, value=0)
             ret_value["clear_cmd"] = True
         elif len(curr_cmd) >= 2 and curr_cmd[-1] == "G" and curr_cmd[:-1].isdigit():
-            self.model.move_cursor(direction=-1, option=5, value=int(curr_cmd[:-1]))
+            self.model.move_cursor(direction=-1, option=5, value=int(curr_cmd[:-1]) - 1)
             ret_value["clear_cmd"] = True
         elif curr_cmd == "x":
             self.model.delete(option=1)
@@ -140,7 +140,6 @@ class SearchMode(ControllerState):
         ret_value = {"state": "current",
                      "exit": False,
                      "clear_cmd": False}
-        # TODO криво работает, или не ищет, или вылетает по странным причинам - будет время, исправлю
         if curr_cmd == "n":
             self.model.search(input_data=self.last_search["data"], direction=self.last_search["dir"])
             ret_value["clear_cmd"] = True
@@ -224,14 +223,35 @@ class CommandMode(ControllerState):
         ret_value = {"state": "current",
                      "exit": False,
                      "clear_cmd": False}
-        if curr_cmd == ":q!\n":
+        if curr_cmd == ":q\n":
+            if not self.model.file_status():
+                ret_value["exit"] = True
+            else:
+                ret_value["state"] = "cmd"
+                ret_value["clear_cmd"] = True
+        elif curr_cmd == ":q!\n":
             ret_value["exit"] = True
-        elif curr_cmd[:3] == ":o " and curr_cmd[-1] == '\n':
+        elif curr_cmd[:3] == ":o " and curr_cmd[-1] == '\n' and len(curr_cmd) > 5:
             self.model.files_action(curr_cmd[3:-1], 1)
             ret_value["state"] = "navigation"
             ret_value["clear_cmd"] = True
-        else:
-            print(f"{curr_cmd}")
+        elif curr_cmd== ":w\n":
+            self.model.files_action("", 3)
+            ret_value["state"] = "cmd"
+            ret_value["clear_cmd"] = True
+        elif curr_cmd == ":x\n":
+            self.model.files_action("", 3)
+            ret_value["exit"] = True
+        elif curr_cmd[:3] == ":w " and curr_cmd[-1] == '\n' and len(curr_cmd) > 5:
+            self.model.files_action(curr_cmd[3:-1], 2)
+            ret_value["exit"] = True
+        elif curr_cmd[:4] == ":wq!\n":
+            self.model.files_action("", 2)
+            ret_value["exit"] = True
+        elif len(curr_cmd) > 2 and curr_cmd[1:-1].isdigit() and curr_cmd[-1] == '\n':
+            self.model.move_cursor(direction=-1, option=5, value=int(curr_cmd[1:-1]) - 1)
+            ret_value["state"] = "cmd"
+            ret_value["clear_cmd"] = True
         return ret_value
 
     def show_state(self) -> None:

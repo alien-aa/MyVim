@@ -59,7 +59,7 @@ class Model(ModelFacade):
                         new_y = 0
                     elif new_y >= len(self.text.text) > 0:
                         new_y = len(self.text.text) - 1
-                    if new_x > self.text.text[new_y].size() > 0:
+                    if new_x > self.text.text[new_y].size() >= 0:
                         new_x = self.text.text[new_y].size()
                 self.cursor.move_cursor(new_x, new_y)
                 self.subject.notify({"action": "move_cursor",
@@ -157,9 +157,9 @@ class Model(ModelFacade):
         """
         option:
         1 open (read)
-        2 write
-        3 no file (without saving)
-        4 no file (saving)
+        2 write name
+        3 write curr
+        4 no file
         """
         match option:
             case 1:
@@ -175,14 +175,13 @@ class Model(ModelFacade):
                                      "filename": name})
                 return
             case 3:
-                self.file.name = None
-                self.file.changed = False
-                self.subject.notify({"action": "no file",
-                                     "filename": name})
+                if self.file.name != "":
+                    self.file.write_file(self.file.name)
+                    self.subject.notify({"action": "write",
+                                         "filename": self.file.name})
                 return
             case 4:
-                self.file.write_file(name)
-                self.file.name = None
+                self.file.name = ""
                 self.file.changed = False
                 self.subject.notify({"action": "no file",
                                      "filename": name})
@@ -202,6 +201,7 @@ class Model(ModelFacade):
         7 \n sym
         8 backspace
         """
+        self.file.changed = True
         match option:
             case 1:
                 self.text.input(self.cursor.x_pos, self.cursor.y_pos, char)
@@ -322,6 +322,7 @@ class Model(ModelFacade):
                 return
 
     def paste(self) -> None:
+        self.file.changed = True
         if self.text.buffer_state:
             self.text.paste_new_string(self.cursor.y_pos)
             self.subject.notify({"action": "paste_new",
@@ -342,41 +343,50 @@ class Model(ModelFacade):
         2 word
         3 string
         """
+        self.file.changed = True
         match option:
             case 1:
                 if self.text.text[self.cursor.y_pos].size() == self.cursor.x_pos and self.cursor.y_pos < len(self.text.text) - 1:
+                    self.cursor.x_pos = self.text.text[self.cursor.y_pos]
                     self.text.go_to_previous(self.cursor.y_pos + 1)
-                    self.text.delete_str(self.cursor.y_pos + 1)
-                    self.subject.notify({"action": "delete_string",
-                                         "string_num": self.cursor.y_pos + 1})
                     self.subject.notify({"action": "post",
                                          "string_num": self.cursor.y_pos,
                                          "string_value": str(self.text.text[self.cursor.y_pos]),
                                          "new_string": False})
+                    self.text.delete_str(self.cursor.y_pos + 1)
+                    self.subject.notify({"action": "delete_string",
+                                         "string_num": self.cursor.y_pos + 1})
                     self.subject.notify({"action": "move_cursor",
                                          "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
-
-                # if self.text.text[self.cursor.y_pos].size() - 1 == 0 and self.cursor.y_pos > 0:
-                #     self.text.delete_str(self.cursor.y_pos)
-                #     self.subject.notify({"action": "delete_string",
-                #                          "string_num": self.cursor.y_pos})
-                #     return
-                # if self.text.text[self.cursor.y_pos].size() - 1 > self.cursor.x_pos >= 0:
-                #     self.text.delete_sym(self.cursor.x_pos, self.cursor.y_pos)
-                #     self.subject.notify({"action": "delete",
-                #                          "string_num": self.cursor.y_pos,
-                #                          "string_value": str(self.text.text[self.cursor.y_pos])})
-                #     return
+                    return
+                if self.text.text[self.cursor.y_pos].size() > self.cursor.x_pos >= 0:
+                    self.text.delete_sym(self.cursor.x_pos, self.cursor.y_pos)
+                    self.subject.notify({"action": "delete",
+                                         "string_num": self.cursor.y_pos,
+                                         "string_value": str(self.text.text[self.cursor.y_pos])})
+                    self.cursor.x_pos = min(self.cursor.x_pos, self.text.text[self.cursor.y_pos].size())
+                    self.subject.notify({"action": "move_cursor",
+                                         "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
+                    return
             case 2:
                 self.text.delete_word(self.cursor.x_pos, self.cursor.y_pos)
                 self.subject.notify({"action": "delete",
                                      "string_num": self.cursor.y_pos,
                                      "string_value": str(self.text.text[self.cursor.y_pos])})
+                self.cursor.x_pos = min(self.cursor.x_pos, self.text.text[self.cursor.y_pos].size())
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
                 return
             case 3:
                 self.text.delete_str(self.cursor.y_pos)
                 self.subject.notify({"action": "delete_string",
                                      "string_num": self.cursor.y_pos})
+                self.cursor.x_pos = min(self.cursor.x_pos, self.text.text[self.cursor.y_pos].size())
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
                 return
             case _:
                 return
+
+    def file_status(self) -> bool:
+        return self.file.changed

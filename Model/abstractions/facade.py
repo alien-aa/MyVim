@@ -33,3 +33,7 @@ class ModelFacade(ABC):
     @abstractmethod
     def delete(self, option: int) -> None:
         pass
+
+    @abstractmethod
+    def file_status(self) -> bool:
+        pass

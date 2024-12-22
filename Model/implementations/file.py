@@ -13,20 +13,27 @@ class ModelFile(IModelFile):
 
 
     def open_file(self, name: str) -> None:
-        with open(name, 'r') as f:
-            self.name = name
-            self.changed = False
-            self.text.text.clear()
-            for line in f:
-                if line[-1] == '\n' and len(line) > 1:
-                    line = line[:-1]
-                elif line[-1] == '\n' and len(line) == 1:
-                    line = ""
-                self.text.text.append(mystring.MyString(line))
+        try:
+            with open(name, 'r') as f:
+                self.name = name
+                self.changed = False
+                self.text.text.clear()
+                for line in f:
+                    if line[-1] == '\n' and len(line) > 1:
+                        line = line[:-1]
+                    elif line[-1] == '\n' and len(line) == 1:
+                        line = ""
+                    self.text.text.append(mystring.MyString(line))
+        except FileNotFoundError:
+            pass
 
 
     def write_file(self, name: str) -> None:
-        with open(name, 'w') as f:
-            self.name = name
-            self.changed = False
-            f.writelines([str(line) for line in self.text.text])
+        try:
+            with open(name, 'w') as f:
+                self.name = name
+                self.changed = False
+                for l in self.text.text:
+                    f.write(str(l) + "\n")
+        except FileNotFoundError:
+            pass

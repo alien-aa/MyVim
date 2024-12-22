@@ -58,9 +58,6 @@ class Controller:
             result = self.state_handle()
             if result["exit"]:
                 break
-            if result["clear_cmd"]:
-                self.state.clear_cmd()
-                self.curr_command = "" if result["state"] != "cmd" else ":"
             if result["state"] == "cmd":
                 self.change_mode(CommandMode(self.state.model, self.state.input_adapter, self.state.last_search))
             elif result["state"] == "search":
@@ -70,12 +67,12 @@ class Controller:
                 self.curr_command = ""
             elif result["state"] == "navigation":
                 self.change_mode(NavigationMode(self.state.model, self.state.input_adapter, self.state.last_search))
+            if result["clear_cmd"]:
+                self.state.clear_cmd()
+                self.curr_command = "" if result["state"] != "cmd" else ":"
             result = self.state.handle_action(self.curr_command)
             if result["exit"]:
                 break
-            if result["clear_cmd"]:
-                self.state.clear_cmd()
-                self.curr_command = "" if result["state"] != "cmd" else ":"
             if result["state"] == "cmd":
                 self.change_mode(CommandMode(self.state.model, self.state.input_adapter, self.state.last_search))
             elif result["state"] == "search":
@@ -85,3 +82,6 @@ class Controller:
                 self.curr_command = ""
             elif result["state"] == "navigation":
                 self.change_mode(NavigationMode(self.state.model, self.state.input_adapter, self.state.last_search))
+            if result["clear_cmd"]:
+                self.state.clear_cmd()
+                self.curr_command = "" if result["state"] != "cmd" else ":"

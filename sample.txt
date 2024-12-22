@@ -4,15 +4,15 @@ Welcome to the Vim text editor.
 There are 4 modes available for using the program.
 
 1. Navigation and editing mode is the main mode of operation, from this mode you can switch to other modes.
-2. Command input mode. 
+2. Command input mode.
 + activation of the command input mode - command <:>
 + exit from the command input mode to the main operation mode – command <ESC>
-3. Input mode. 
+3. Input mode.
 + activation of text input mode before the cursor – using commands from the "Text input"
 section + activation of text input mode after the cursor - command <o>
 + clear the current line and start typing from the beginning of the line - command <S>
 + exit the input mode to the main operation mode – command <ESC>.
-4. Search mode. 
+4. Search mode.
 + activating the search mode until the end of the document - command </>;
 + activating the search mode before the start of the document - command <?>;
 + exit the search mode to the main operation mode - command <ESC>.
@@ -24,7 +24,7 @@ Available commands (for each mode):
 RIGHT - Move the cursor to the right by 1 position
 LEFT - Move the cursor to the right by 1 position
 UP - Moving the cursor up 1 line
-DOWN - Moving the cursor down 1 line 
+DOWN - Moving the cursor down 1 line
 ^ (or 0) - Moving the cursor to the beginning of the line
 $ - Moving the cursor to the end of the line
 w - Moving the cursor to the end of the word to the right of the cursor

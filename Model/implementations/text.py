@@ -17,7 +17,7 @@ class ModelText(IModelText):
                 index = self.text[start_y].find(input_data, start_x)
                 if index < 0:
                     for i in range(start_y + 1, len(self.text)):
-                        if self.text[i].size() - 1 == 0:
+                        if self.text[i].size() == 0:
                             continue
                         index = self.text[i].find(input_data)
                         if index >= 0:
@@ -29,7 +29,7 @@ class ModelText(IModelText):
                 index = -1 if index >= start_x else index
                 if index < 0:
                     for i in range(start_y, -1, -1):
-                        if self.text[i].size() - 1 == 0:
+                        if self.text[i].size() == 0:
                             continue
                         index = self.text[i].find(input_data)
                         if index >= 0:
@@ -65,7 +65,7 @@ class ModelText(IModelText):
                 begin_index -= 1
             if self.text[line_num][begin_index] == ' ':
                 begin_index += 1
-            while end_index < self.text[line_num].size() - 1 and self.text[line_num][end_index] != ' ':
+            while end_index < self.text[line_num].size() and self.text[line_num][end_index] != ' ':
                 end_index += 1
             self.buffer.clear()
             for i in range(begin_index, end_index):
@@ -91,7 +91,7 @@ class ModelText(IModelText):
 
     def delete_sym(self, sym_num: int, line_num: int) -> bool:
         try:
-            if self.text[line_num].size() - 1 > sym_num >= 0:
+            if self.text[line_num].size() > sym_num >= 0:
                 self.text[line_num].erase(sym_num, 1)
             return True
         except IndexError:
@@ -110,9 +110,9 @@ class ModelText(IModelText):
                 begin_index -= 1
             if self.text[line_num][begin_index] == ' ':
                 begin_index += 1
-            while end_index < self.text[line_num].size() - 1 and self.text[line_num][end_index] != ' ':
+            while end_index < self.text[line_num].size() and self.text[line_num][end_index] != ' ':
                 end_index += 1
-            if end_index < self.text[line_num].size() - 1 and self.text[line_num][end_index] == ' ':
+            if end_index < self.text[line_num].size() and self.text[line_num][end_index] == ' ':
                 end_index += 1
             self.text[line_num].erase(begin_index, end_index - begin_index)
             return True
@@ -135,13 +135,10 @@ class ModelText(IModelText):
 
     def new_string(self, sym_num: int, line_num: int) -> bool:
         try:
-            new_string = mystring.MyString("")
-            for i in range(sym_num, self.text[line_num].size() - 1):
-                new_string.append(str(self.text[line_num][i]))
-            for i in range(sym_num, self.text[line_num].size() - 1):
-                self.text[line_num].erase(i, 1)
             self.text.insert(line_num + 1, mystring.MyString(""))
-            self.text[line_num + 1].append(str(new_string))
+            for i in range(sym_num, self.text[line_num].size()):
+                self.text[line_num + 1].append(str(self.text[line_num][i]))
+            self.text[line_num].erase(sym_num, self.text[line_num].size() - sym_num)
             return True
         except IndexError:
             return False
@@ -156,8 +153,8 @@ class ModelText(IModelText):
 
     def go_to_previous(self, line_num: int) -> bool:
         try:
-            for i in range(self.text[line_num].size() - 1):
-                self.text[line_num - 1].insert(self.text[line_num - 1].size() - 1, str(self.text[line_num][i]))
+            for i in range(self.text[line_num].size()):
+                self.text[line_num - 1].append(str(self.text[line_num][i]))
             return True
         except IndexError:
             return False
