@@ -1,5 +1,5 @@
 from Model.abstractions.isubject import IModelSubject
-from View.abstractions.observer import Observer
+from Model.abstractions.observer import Observer
 
 
 class ModelSubject(IModelSubject):

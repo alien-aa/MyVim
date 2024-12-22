@@ -1,4 +1,4 @@
-from View.abstractions.observer import Observer
+from Model.abstractions.observer import Observer
 
 from View.abstractions.idisplay import IDisplay
 

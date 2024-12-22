@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from View.abstractions.observer import Observer
+from Model.abstractions.observer import Observer
 
 
 class IModelSubject(ABC):

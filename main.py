@@ -1,10 +1,12 @@
 from Controller.controller import Controller
-from Model.implementations.text import ModelText
-from View.implementations.adapter import Adapter
+
 from Model.implementations.model import Model
+from Model.implementations.text import ModelText
 from Model.implementations.subject import ModelSubject
 from Model.implementations.cursor import ModelCursor
 from Model.implementations.file import ModelFile
+
+from View.implementations.adapter import Adapter
 from View.implementations.view import View
 
 help_filename = "C:\\Users\\alien_aa\\PycharmProjects\\MyVim\\help.txt"
