@@ -47,7 +47,7 @@ class Adapter(IDisplay, IInteractor):
     def load_text(self, text: list[str]) -> None:
         self.editor.curr_text = text
         self.editor.cursor_pos = [0, 0]
-        self.editor.screen_borders_yx = [[0, 0], [0, 0]]
+        self.editor.screen_borders = [0, 0]
         self.editor.cursor_on_screen = [0, 0]
         self.update_handler()
 
@@ -185,10 +185,10 @@ class Adapter(IDisplay, IInteractor):
                 self.editor.screen_borders[1] = self.editor.screen_borders[0] + height
 
         for i in range(self.editor.screen_borders[0], self.editor.screen_borders[1]):
-            if len(on_screen) >= height and cursor_flag:
+            if len(on_screen) > height and cursor_flag:
                 self.editor.screen_borders[1] = i
                 break
-            elif len(on_screen) >= height:
+            elif len(on_screen) > height:
                 if self.editor.cursor_on_screen[1] <= len(on_screen) - height:
                     while len(on_screen) >= height:
                         on_screen.pop(-1)
@@ -234,7 +234,7 @@ class Adapter(IDisplay, IInteractor):
                         self.editor.cursor_on_screen[0] = self.editor.cursor_pos[0] % (width - 1)
                         cursor_flag = True
 
-        while len(on_screen) >= height:
+        while len(on_screen) > height:
             if self.editor.cursor_on_screen[1] <= len(on_screen) - height:
                 on_screen.pop(-1)
             else:
