@@ -45,5 +45,13 @@ class  IModelText(ABC):
         pass
 
     @abstractmethod
+    def new_string(self, sym_num: int, line_num: int) -> bool:
+        pass
+
+    @abstractmethod
     def replace_sym(self, sym_num: int, line_num: int, input_data: str) -> bool:
+        pass
+
+    @abstractmethod
+    def go_to_previous(self, line_num: int) -> bool:
         pass

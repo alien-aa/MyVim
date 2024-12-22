@@ -1,5 +1,6 @@
 import curses
 import curses.panel
+from functools import update_wrapper
 
 from View.abstractions.idisplay import IDisplay
 from View.abstractions.iinteractor import IInteractor
@@ -20,24 +21,66 @@ class Adapter(IDisplay, IInteractor):
         changes type:
         1 - replace old_text[line_num] -> text
         2 - insert text to line_num position
+        3 - delete old_text[line_num]
         """
-        # TODO: начинаю разрабатывать приём апдейтов, чтобы не загружать сразу всё
-        # TODO: добавить загрузку из файла (отдельную), где просто будет загружаться весь текст
-        # TODO: проверить ресайз и сделать где-то там (мб в другом методе, но рядом) сдвиг по курсору нормальный
-
-        pass
+        match changes_type:
+            case 1:
+                self.editor.curr_text[line_num] = text
+                self.editor.screen_borders[0] = 0
+                self.editor.screen_borders[1] = len(self.editor.curr_text)
+                self.update_handler()
+            case 2:
+                self.editor.curr_text.insert(line_num, text)
+                self.editor.screen_borders[1] = len(self.editor.curr_text)
+                self.update_handler()
+            case 3:
+                self.editor.curr_text.pop(line_num)
+                self.editor.screen_borders[1] = len(self.editor.curr_text)
+                self.update_handler()
+            case _:
+                return
 
     def update_cursor(self, new_pos: list[int]) -> None:
-        pass
+        self.editor.cursor_pos = new_pos
+        self.update_handler()
 
-    def load_text(self, text: list[str]):
-        pass
+    def load_text(self, text: list[str]) -> None:
+        self.editor.curr_text = text
+        self.editor.cursor_pos = [0, 0]
+        self.editor.screen_borders_yx = [[0, 0], [0, 0]]
+        self.editor.cursor_on_screen = [0, 0]
+        self.update_handler()
 
     def change_page(self, direction: bool) -> None:
-        pass
+        """
+        direction:
+        False UP
+        True DOWN
+        """
+        height, width = self.window.screen.getmaxyx()
+        if direction:
+            self.editor.screen_borders[0] = min(len(self.editor.curr_text) - 1, self.editor.screen_borders[0] + height)
+            self.editor.screen_borders[1] = min(len(self.editor.curr_text), self.editor.screen_borders[1] + height)
+            self.editor.cursor_pos[1] = self.editor.screen_borders[0]
+            self.editor.cursor_pos[0] = min(self.editor.cursor_pos[0], len(self.editor.curr_text[self.editor.cursor_pos[1]]))
+            self.update_handler()
+        else:
+            self.editor.screen_borders[0] = max(0, self.editor.screen_borders[0] - height)
+            self.editor.screen_borders[1] = max(1, self.editor.screen_borders[1] - height)
+            self.editor.cursor_pos[1] = self.editor.screen_borders[0]
+            self.editor.cursor_pos[0] = min(self.editor.cursor_pos[0], len(self.editor.curr_text[self.editor.cursor_pos[1]]))
+            self.update_handler()
 
     def read_char(self) -> str:
-        pass
+        char_code = self.window.editor_panel.window().getkey()
+        if char_code == "\b":
+            char_code = "BACKSPACE"
+        elif char_code == "\x1b":
+            return "ESCAPE"
+        elif char_code == "\n":
+            return "ENTER"
+        self.update_handler()
+        return char_code
 
     def state(self, message: str) -> None:
         self.status_bar.mode = message
@@ -69,6 +112,9 @@ class Adapter(IDisplay, IInteractor):
         self.status_bar.command = new_cmd
         self.update_handler()
 
+    def get_cursor(self) -> list[int]:
+        return self.editor.cursor_pos
+
     def update_handler(self) -> None:
         self.status_bar.strings[0] = str(self.editor.cursor_pos[1] + 1)
         self.status_bar.strings[1] = str(len(self.editor.curr_text))
@@ -78,7 +124,6 @@ class Adapter(IDisplay, IInteractor):
         if not_overflow:
             self.update_statusbar()
         self.update_editor()
-        self.window.editor_panel.window().move(self.editor.cursor_on_screen[1], self.editor.cursor_on_screen[0])
 
     def resize_statusbar(self) -> bool:
         self.window.status_bar_panel.window().clear()
@@ -94,7 +139,6 @@ class Adapter(IDisplay, IInteractor):
             curses.curs_set(1)
             self.window.status_bar_panel.show()
             self.window.status_bar_panel.window().refresh()
-
             return False
         else:
             self.status_bar.height = (total_length // width) + 1
@@ -127,20 +171,88 @@ class Adapter(IDisplay, IInteractor):
         self.window.status_bar_panel.window().refresh()
 
     def update_editor(self):
-        height, width = self.window.editor_panel.window().getmaxyx()
-        y = 0
-        for i in range(self.editor.screen_borders_yx[0][0], self.editor.screen_borders_yx[1][0] + 1):
-            part_start = self.editor.screen_borders_yx[0][1] \
-                if i == self.editor.screen_borders_yx[0][0] else 0
+        height, width = self.window.screen.getmaxyx()
+        height -= self.status_bar.height
+        on_screen = []
+        self.editor.cursor_on_screen = [0, 0]
+        cursor_flag = False
+        self.editor.screen_borders[0] = min(self.editor.screen_borders[0], self.editor.cursor_pos[1]) # чтобы двигалось вверх при перемещении курсора вверх
+        self.editor.screen_borders[1] = max(self.editor.screen_borders[1], self.editor.cursor_pos[1] + 1)
+        if self.editor.screen_borders[1] - self.editor.screen_borders[0] >= height:
+            if self.editor.screen_borders[1] - self.editor.cursor_pos[1] < height:
+                self.editor.screen_borders[0] = self.editor.screen_borders[1] - height
+            elif self.editor.cursor_pos[1] - self.editor.screen_borders[0] < height:
+                self.editor.screen_borders[1] = self.editor.screen_borders[0] + height
+
+        for i in range(self.editor.screen_borders[0], self.editor.screen_borders[1]):
+            if len(on_screen) >= height and cursor_flag:
+                self.editor.screen_borders[1] = i
+                break
+            elif len(on_screen) >= height:
+                if self.editor.cursor_on_screen[1] <= len(on_screen) - height:
+                    while len(on_screen) >= height:
+                        on_screen.pop(-1)
+                else:
+                    while len(on_screen) >= height:
+                        on_screen.pop(0)
+                        self.editor.cursor_on_screen[1] -= 1
+
             line = self.editor.curr_text[i]
-            part_end = self.editor.screen_borders_yx[1][1] \
-                if i == self.editor.screen_borders_yx[1][0] else len(line) // width
-            for j in range(part_start, part_end + 1):
-                out_line = line[j * width:(j + 1) * width]
-                self.window.editor_panel.window().addstr(y, 0, out_line)
-                y += 1
+            max_parts = len(line) // (width - 1) + 1
+            for j in range(max_parts):
+                part = line[j * (width - 1):(j + 1) * (width - 1)]
+                on_screen.append(part)
+                if i < self.editor.cursor_pos[1]:
+                    self.editor.cursor_on_screen[1] += 1
+                elif i == self.editor.cursor_pos[1] and (j * (width - 1) <= self.editor.cursor_pos[0] < (j + 1) * (width - 1)):
+                    self.editor.cursor_on_screen[0] = self.editor.cursor_pos[0] % (width - 1)
+                    cursor_flag = True
+
+        if len(on_screen) < height:
+            for i in range(self.editor.screen_borders[1], len(self.editor.curr_text)):
+                if len(on_screen) >= height and cursor_flag:
+                    self.editor.screen_borders[1] = i + 1
+                    break
+                elif len(on_screen) >= height:
+                    if self.editor.cursor_on_screen[1] <= len(on_screen) - height:
+                        while len(on_screen) >= height:
+                            on_screen.pop(-1)
+                    else:
+                        while len(on_screen) >= height:
+                            on_screen.pop(0)
+                            self.editor.cursor_on_screen[1] -= 1
+
+                line = self.editor.curr_text[i]
+                max_parts = len(line) // (width - 1) + 1
+                for j in range(max_parts):
+                    part = line[j * (width - 1):(j + 1) * (width - 1)]
+                    on_screen.append(part)
+                    if i < self.editor.cursor_pos[1]:
+                        self.editor.cursor_on_screen[1] += 1
+                    elif i == self.editor.cursor_pos[1] and (
+                            j * (width - 1) <= self.editor.cursor_pos[0] < (j + 1) * (width - 1)):
+                        self.editor.cursor_on_screen[0] = self.editor.cursor_pos[0] % (width - 1)
+                        cursor_flag = True
+
+        while len(on_screen) >= height:
+            if self.editor.cursor_on_screen[1] <= len(on_screen) - height:
+                on_screen.pop(-1)
+            else:
+                on_screen.pop(0)
+                self.editor.cursor_on_screen[1] -= 1
+        y = 0
+        for item in on_screen:
+            self.window.editor_panel.window().addstr(y, 0, item)
+            y += 1
         self.window.editor_panel.show()
         self.window.editor_panel.window().refresh()
+        self.window.editor_panel.window().leaveok(True)
+        self.window.status_bar_panel.window().leaveok(True)
+        self.window.screen.leaveok(True)
+        curses.curs_set(1)
+        curses.setsyx(self.editor.cursor_on_screen[1], self.editor.cursor_on_screen[0])
+
+
 
 
 class Window:
@@ -183,14 +295,14 @@ class Window:
         self.editor_panel.window().refresh()
         self.status_bar_panel.show()
         self.status_bar_panel.window().refresh()
-        self.editor_panel.window().move(1, 0)
+        curses.setsyx(0, 0)
 
 
 class Editor:
     def __init__(self):
         self.curr_text = [""]
         self.cursor_pos = [0, 0]
-        self.screen_borders_yx = [[0, 0], [0, 0]]
+        self.screen_borders = [0, 0]
         self.cursor_on_screen = [0, 0]
 
 
@@ -200,4 +312,4 @@ class StatusBar:
         self.file = "no file"
         self.command = ""
         self.strings = ["1", "0"]
-        self.height = 3
+        self.height = 1

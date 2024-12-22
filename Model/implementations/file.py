@@ -18,6 +18,10 @@ class ModelFile(IModelFile):
             self.changed = False
             self.text.text.clear()
             for line in f:
+                if line[-1] == '\n' and len(line) > 1:
+                    line = line[:-1]
+                elif line[-1] == '\n' and len(line) == 1:
+                    line = ""
                 self.text.text.append(mystring.MyString(line))
 
 

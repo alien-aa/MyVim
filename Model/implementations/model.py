@@ -27,10 +27,11 @@ class Model(ModelFacade):
         2 RIGHT
         options:
         1 move for value of positions (ULDR)
-        2 move to border of string (RL, value = None)
-        3 move for 1 word (RL, value = None)
-        4 move to border of file (UD, value = None)
-        5 move for value string (direction = None)
+        2 move to border of string (RL)
+        3 move for 1 word (RL)
+        4 move to border of file (UD)
+        5 move for value string
+        6 move to (direction, value) as (x, y)
         """
         match option:
             case 1:
@@ -44,78 +45,103 @@ class Model(ModelFacade):
                     if new_x < 0:
                         if new_y > 0:
                             new_y -= 1
-                            new_x = self.text.text[new_y].size() - 1
+                            new_x = self.text.text[new_y].size()
                         else:
                             new_x = 0
-                    elif new_x >= self.text.text[new_y].size() > 0:
+                    elif new_x > self.text.text[new_y].size() >= 0:
                         if new_y < len(self.text.text) - 1:
                             new_x = 0
                             new_y += 1
                         else:
-                            new_x = self.text.text[new_y].size() - 1
+                            new_x = self.text.text[new_y].size()
                 else:
                     if new_y < 0:
                         new_y = 0
                     elif new_y >= len(self.text.text) > 0:
                         new_y = len(self.text.text) - 1
-                    if new_x >= self.text.text[new_y].size() > 0:
-                        new_x = self.text.text[new_y].size() - 1
+                    if new_x > self.text.text[new_y].size() > 0:
+                        new_x = self.text.text[new_y].size()
                 self.cursor.move_cursor(new_x, new_y)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [new_x, new_y]})
                 return
             case 2:
                 new_x = 0
                 new_y = self.cursor.y_pos
-                new_x = self.text.text[new_y].size() - 1 if direction == 2 else new_x
+                new_x = self.text.text[new_y].size() if direction == 2 else new_x
                 self.cursor.move_cursor(new_x, new_y)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [new_x, new_y]})
                 return
             case 3:
                 if direction == 2:
                     new_x = self.cursor.x_pos
-                    new_x = new_x + 1 if (self.text.text[self.cursor.y_pos][new_x] == ' '
-                                          and new_x != self.text.text[self.cursor.y_pos].size() - 1) else new_x
-                    while (self.text.text[self.cursor.y_pos][new_x] != ' '
-                           and new_x != self.text.text[self.cursor.y_pos].size() - 1):
+                    if new_x == self.text.text[self.cursor.y_pos].size():
+                        if self.cursor.y_pos + 1 < len(self.text.text):
+                            self.cursor.y_pos += 1
+                            new_x = 0
+                        else:
+                            new_x = self.text.text[self.cursor.y_pos].size()
+                    while (new_x < self.text.text[self.cursor.y_pos].size()
+                           and self.text.text[self.cursor.y_pos][new_x] == ' '):
+                        new_x += 1
+                    while (new_x < self.text.text[self.cursor.y_pos].size()
+                           and self.text.text[self.cursor.y_pos][new_x] != ' '):
                         new_x += 1
                     self.cursor.move_cursor(new_x, self.cursor.y_pos)
-                    self.subject.notify({}) #TODO дописать сообщение
+                    self.subject.notify({"action": "move_cursor",
+                                         "new_pos": [new_x, self.cursor.y_pos]})
+
                 elif direction == 0:
                     new_x = self.cursor.x_pos
-                    new_x = new_x - 1 if self.text.text[self.cursor.y_pos][new_x] == ' ' and new_x != 0 else new_x
-                    while self.text.text[self.cursor.y_pos][new_x] != ' ' and new_x != 0:
-                        new_x -= 1
+                    if self.cursor.y_pos < len(self.text.text):
+                        if new_x == 0 and self.cursor.y_pos > 0:
+                            self.cursor.y_pos -= 1
+                            new_x = len(
+                                self.text.text[self.cursor.y_pos])
+                        while new_x > 0 and self.text.text[self.cursor.y_pos][new_x - 1] == ' ':
+                            new_x -= 1
+                        while new_x > 0 and self.text.text[self.cursor.y_pos][new_x - 1] != ' ':
+                            new_x -= 1
                     self.cursor.move_cursor(new_x, self.cursor.y_pos)
-                    self.subject.notify({}) #TODO дописать сообщение
+                    self.subject.notify({"action": "move_cursor", "new_pos": [new_x, self.cursor.y_pos]})
                 return
             case 4:
                 if direction == -1:
                     self.cursor.move_cursor(0, 0)
+                    self.subject.notify({"action": "move_cursor",
+                                         "new_pos": [0, 0]})
                 elif direction == 1:
                     new_y = len(self.text.text) - 1
-                    new_x = self.text.text[new_y].size() - 1
+                    new_x = self.text.text[new_y].size()
                     self.cursor.move_cursor(new_x, new_y)
-                self.subject.notify({}) #TODO дописать сообщение
+                    self.subject.notify({"action": "move_cursor",
+                                         "new_pos": [new_x, new_y]})
                 return
             case 5:
                 value = len(self.text.text) - 1 if value >= len(self.text.text) else value
                 self.cursor.move_cursor(0, value)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [0, value]})
                 return
+            case 6:
+                self.cursor.move_cursor(direction, value)
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [direction, value]})
             case _:
                 return
 
-    def change_pos(self, string_num: int, screen_direction: int, num_on_screen: int) -> None:
+    def change_pos(self, screen_direction: int) -> None:
         """
         direction:
         -1 UP
         1 DOWN
         """
-        self.move_cursor(screen_direction, 1, num_on_screen)
-        self.subject.notify({}) #TODO дописать сообщение
+        self.subject.notify({"action": "change_pos",
+                             "new_pos": screen_direction})
         return
 
-    def search(self, input_data: str, direction: bool) -> None:
+    def search(self, input_data: str, direction: int) -> None:
         """
         direction:
         -1 UP
@@ -123,7 +149,8 @@ class Model(ModelFacade):
         """
         new_x, new_y = self.text.search(input_data, direction, self.cursor.x_pos, self.cursor.y_pos)
         self.cursor.move_cursor(new_x, new_y)
-        self.subject.notify({}) #TODO дописать сообщение
+        self.subject.notify({"action": "move_cursor",
+                             "new_pos": [new_x, new_y]})
         return
 
     def files_action(self, name: str, option: int) -> None:
@@ -134,26 +161,31 @@ class Model(ModelFacade):
         3 no file (without saving)
         4 no file (saving)
         """
-        # TODO: implement method
         match option:
             case 1:
                 self.file.open_file(name)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "file",
+                                     "filename": name,
+                                     "text": [str(item) for item in self.text.text]})
                 return
             case 2:
                 self.file.write_file(name)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.file.changed = False
+                self.subject.notify({"action": "write",
+                                     "filename": name})
                 return
             case 3:
                 self.file.name = None
                 self.file.changed = False
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "no file",
+                                     "filename": name})
                 return
             case 4:
                 self.file.write_file(name)
                 self.file.name = None
                 self.file.changed = False
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "no file",
+                                     "filename": name})
                 return
             case _:
                 return
@@ -166,34 +198,110 @@ class Model(ModelFacade):
         3 from ending of string
         4 erase string & write
         5 replace char
+        6 after cursor
+        7 \n sym
+        8 backspace
         """
-        # TODO: implement method
         match option:
             case 1:
                 self.text.input(self.cursor.x_pos, self.cursor.y_pos, char)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.cursor.x_pos += 1
+                self.subject.notify({"action": "post",
+                                     "string_num": self.cursor.y_pos,
+                                     "string_value": str(self.text.text[self.cursor.y_pos]),
+                                     "new_string": False})
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
                 return
             case 2:
                 self.cursor.move_cursor(0, self.cursor.y_pos)
                 self.text.input(self.cursor.x_pos, self.cursor.y_pos, char)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "post",
+                                     "string_num": self.cursor.y_pos,
+                                     "string_value": str(self.text.text[self.cursor.y_pos]),
+                                     "new_string": False})
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
                 return
             case 3:
-                self.cursor.move_cursor(self.text.text[self.cursor.y_pos].size() - 1, self.cursor.y_pos)
+                self.cursor.move_cursor(self.text.text[self.cursor.y_pos].size(), self.cursor.y_pos)
                 self.text.input(self.cursor.x_pos, self.cursor.y_pos, char)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "post",
+                                     "string_num": self.cursor.y_pos,
+                                     "string_value": str(self.text.text[self.cursor.y_pos]),
+                                     "new_string": False})
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
                 return
             case 4:
                 self.cursor.move_cursor(0, self.cursor.y_pos)
                 self.text.text[self.cursor.y_pos].clear()
                 self.text.input(self.cursor.x_pos, self.cursor.y_pos, char)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "post",
+                                     "string_num": self.cursor.y_pos,
+                                     "string_value": str(self.text.text[self.cursor.y_pos]),
+                                     "new_string": False})
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
                 return
             case 5:
                 self.text.delete_sym(self.cursor.x_pos, self.cursor.y_pos)
                 self.text.input(self.cursor.x_pos, self.cursor.y_pos, char)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "post",
+                                     "string_num": self.cursor.y_pos,
+                                     "string_value": str(self.text.text[self.cursor.y_pos]),
+                                     "new_string": False})
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
                 return
+            case 6:
+                self.text.input(self.cursor.x_pos + 1, self.cursor.y_pos, char)
+                self.subject.notify({"action": "post",
+                                     "string_num": self.cursor.y_pos,
+                                     "string_value": str(self.text.text[self.cursor.y_pos]),
+                                     "new_string": False})
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
+                return
+            case 7:
+                self.text.new_string(self.cursor.x_pos, self.cursor.y_pos)
+                self.cursor.y_pos += 1
+                self.cursor.x_pos = 0
+                self.cursor.move_cursor(self.cursor.x_pos, self.cursor.y_pos)
+                self.subject.notify({"action": "post",
+                                     "string_num": self.cursor.y_pos - 1,
+                                     "string_value": str(self.text.text[self.cursor.y_pos - 1]),
+                                     "new_string": False})
+                self.subject.notify({"action": "post",
+                                     "string_num": self.cursor.y_pos,
+                                     "string_value": str(self.text.text[self.cursor.y_pos]),
+                                     "new_string": True})
+                self.subject.notify({"action": "move_cursor",
+                                     "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
+                return
+            case 8:
+                line_num = self.cursor.y_pos
+                sym_num = self.cursor.x_pos
+                if line_num < len(self.text.text) and sym_num > 0:
+                    self.cursor.x_pos -= 1
+                    self.delete(1)
+                    self.subject.notify({"action": "move_cursor",
+                                         "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
+                    return
+                elif line_num > 0 and sym_num == 0:
+                    prev_line = line_num - 1
+                    if prev_line >= 0:
+                        self.cursor.x_pos = self.text.text[prev_line].size()
+                        self.text.go_to_previous(line_num)
+                        self.delete(3)
+                        self.cursor.y_pos -= 1
+                        self.subject.notify({"action": "post",
+                                             "string_num": self.cursor.y_pos,
+                                             "string_value": str(self.text.text[self.cursor.y_pos]),
+                                             "new_string": False})
+                        self.subject.notify({"action": "move_cursor",
+                                             "new_pos": [self.cursor.x_pos, prev_line]})
+                        return
             case _:
                 return
 
@@ -206,11 +314,9 @@ class Model(ModelFacade):
         match option:
             case 1:
                 self.text.copy_string(self.cursor.y_pos)
-                self.subject.notify({}) #TODO дописать сообщение
                 return
             case 2:
                 self.text.copy_word(self.cursor.x_pos, self.cursor.y_pos)
-                self.subject.notify({}) #TODO дописать сообщение
                 return
             case _:
                 return
@@ -218,11 +324,15 @@ class Model(ModelFacade):
     def paste(self) -> None:
         if self.text.buffer_state:
             self.text.paste_new_string(self.cursor.y_pos)
-            self.subject.notify({}) #TODO дописать сообщение
+            self.subject.notify({"action": "paste_new",
+                                 "string_num": self.cursor.y_pos + 1,
+                                 "string_value": str(self.text.text[self.cursor.y_pos + 1])})
             return
         else:
             self.text.paste_in_string(self.cursor.x_pos, self.cursor.y_pos)
-            self.subject.notify({}) #TODO дописать сообщение
+            self.subject.notify({"action": "paste_in",
+                                 "string_num": self.cursor.y_pos,
+                                 "string_value": str(self.text.text[self.cursor.y_pos])})
             return
 
     def delete(self, option: int) -> None:
@@ -234,16 +344,39 @@ class Model(ModelFacade):
         """
         match option:
             case 1:
-                self.text.replace_sym(self.cursor.x_pos, self.cursor.y_pos, '')
-                self.subject.notify({}) #TODO дописать сообщение
-                return
+                if self.text.text[self.cursor.y_pos].size() == self.cursor.x_pos and self.cursor.y_pos < len(self.text.text) - 1:
+                    self.text.go_to_previous(self.cursor.y_pos + 1)
+                    self.text.delete_str(self.cursor.y_pos + 1)
+                    self.subject.notify({"action": "delete_string",
+                                         "string_num": self.cursor.y_pos + 1})
+                    self.subject.notify({"action": "post",
+                                         "string_num": self.cursor.y_pos,
+                                         "string_value": str(self.text.text[self.cursor.y_pos]),
+                                         "new_string": False})
+                    self.subject.notify({"action": "move_cursor",
+                                         "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
+
+                # if self.text.text[self.cursor.y_pos].size() - 1 == 0 and self.cursor.y_pos > 0:
+                #     self.text.delete_str(self.cursor.y_pos)
+                #     self.subject.notify({"action": "delete_string",
+                #                          "string_num": self.cursor.y_pos})
+                #     return
+                # if self.text.text[self.cursor.y_pos].size() - 1 > self.cursor.x_pos >= 0:
+                #     self.text.delete_sym(self.cursor.x_pos, self.cursor.y_pos)
+                #     self.subject.notify({"action": "delete",
+                #                          "string_num": self.cursor.y_pos,
+                #                          "string_value": str(self.text.text[self.cursor.y_pos])})
+                #     return
             case 2:
                 self.text.delete_word(self.cursor.x_pos, self.cursor.y_pos)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "delete",
+                                     "string_num": self.cursor.y_pos,
+                                     "string_value": str(self.text.text[self.cursor.y_pos])})
                 return
             case 3:
                 self.text.delete_str(self.cursor.y_pos)
-                self.subject.notify({}) #TODO дописать сообщение
+                self.subject.notify({"action": "delete_string",
+                                     "string_num": self.cursor.y_pos})
                 return
             case _:
                 return

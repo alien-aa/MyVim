@@ -7,11 +7,11 @@ class ModelFacade(ABC):
         pass
 
     @abstractmethod
-    def change_pos(self, string_num: int, screen_direction: int, num_on_screen: int) -> None:
+    def change_pos(self, screen_direction: int) -> None:
         pass
 
     @abstractmethod
-    def search(self, input_data: str, direction: bool) -> None:
+    def search(self, input_data: str, direction: int) -> None:
         pass
 
     @abstractmethod

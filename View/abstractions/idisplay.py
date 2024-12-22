@@ -14,5 +14,9 @@ class IDisplay(ABC):
         pass
 
     @abstractmethod
+    def load_text(self, text: list[str]) -> None:
+        pass
+
+    @abstractmethod
     def change_page(self, direction: bool) -> None:
         pass

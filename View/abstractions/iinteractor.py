@@ -17,3 +17,7 @@ class IInteractor(ABC):
     @abstractmethod
     def clear_cmd(self, new_cmd: str) -> None:
         pass
+
+    @abstractmethod
+    def get_cursor(self) -> list[int]:
+        pass

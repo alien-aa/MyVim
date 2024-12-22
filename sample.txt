@@ -1,0 +1,66 @@
+Welcome to the Vim text editor.
+
+
+There are 4 modes available for using the program.
+
+1. Navigation and editing mode is the main mode of operation, from this mode you can switch to other modes.
+2. Command input mode. 
++ activation of the command input mode - command <:>
++ exit from the command input mode to the main operation mode – command <ESC>
+3. Input mode. 
++ activation of text input mode before the cursor – using commands from the "Text input"
+section + activation of text input mode after the cursor - command <o>
++ clear the current line and start typing from the beginning of the line - command <S>
++ exit the input mode to the main operation mode – command <ESC>.
+4. Search mode. 
++ activating the search mode until the end of the document - command </>;
++ activating the search mode before the start of the document - command <?>;
++ exit the search mode to the main operation mode - command <ESC>.
+
+
+Available commands (for each mode):
+
+"Navigation and editing mode"
+RIGHT - Move the cursor to the right by 1 position
+LEFT - Move the cursor to the right by 1 position
+UP - Moving the cursor up 1 line
+DOWN - Moving the cursor down 1 line 
+^ (or 0) - Moving the cursor to the beginning of the line
+$ - Moving the cursor to the end of the line
+w - Moving the cursor to the end of the word to the right of the cursor
+b - Moving the cursor to the beginning of the word to the left of the cursor
+gg - Go to the beginning of the file
+G - Go to the end of the file
+NG - Go to the line with the number N
+PG_UP - Go to the top of the screen
+PG_DOWN - Go to the bottom of the screen
+x - Delete the character after the cursor
+diw - Delete the word under the cursor, including the space on the right.
+dd - Cut the current line
+yy - Copy the current line
+yw - Copy the word under the cursor
+p - Insert after the cursor
+
+"Command input mode"
+o filename - Open filename file
+x - Write to the current file and exit
+w - Write to the current file
+w filename - Write to filename
+q - Exit. If the file has been changed, then exit is possible only through q!
+q! - Exit without saving
+wq! - Write to the current file and exit
+number - Go to the line number
+h - Output help for commands (you are here!)
+
+"Input mode"
+i - Text input in front of the cursor
+I - Go to the beginning of the line and start typing
+A - Go to the end of the line and start typing
+S - Delete the contents of the line and start typing
+r - Replace one character under the cursor
+
+"Search mode"
+/text<CR> - Search for the text string from the cursor to the end of the file. If a line is found, move the cursor to the beginning of the line
+?text<CR> - Search for the text string from the cursor to the beginning of the file. If the line is found, move the cursor to the beginning of the line.
+n - Repeat the search
+N - Repeat the search in the opposite direction
