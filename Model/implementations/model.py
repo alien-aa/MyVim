@@ -5,16 +5,28 @@ from Model.abstractions.icursor import IModelCursor
 from Model.abstractions.itext import IModelText
 from Model.abstractions.isubject import IModelSubject
 
+
 class Model(ModelFacade):
     def __init__(self,
                  file: IModelFile,
                  cursor: IModelCursor,
                  text: IModelText,
-                 subject: IModelSubject):
+                 subject: IModelSubject,
+
+                 file_buffer: IModelFile,
+                 cursor_buffer: IModelCursor,
+                 text_buffer: IModelText):
         self.file = file
         self.cursor = cursor
         self.text = text
         self.subject = subject
+
+        self.help_status = False
+        self.cursor_buffer = cursor_buffer
+        self.text_buffer = text_buffer
+        self.file_buffer = file_buffer
+
+
 
 
     def move_cursor(self, direction: int | None, option: int, value: int | None) -> None:
@@ -390,3 +402,22 @@ class Model(ModelFacade):
 
     def file_status(self) -> bool:
         return self.file.changed
+
+    def help(self, status: bool) -> None:
+        if status != self.help_status:
+            self.help_status = status
+            self.text, self.text_buffer = self.text_buffer, self.text
+            self.cursor, self.cursor_buffer = self.cursor_buffer, self.cursor
+            self.file, self.file_buffer = self.file_buffer, self.file
+            self.subject.notify({"action": "file",
+                                 "filename": self.file.name if self.file.name != "" else "no file",
+                                 "text": [str(item) for item in self.text.text]})
+            self.subject.notify({"action": "move_cursor",
+                                 "new_pos": [self.cursor.x_pos, self.cursor.y_pos]})
+
+    def help_state(self) -> bool:
+        return self.help_status
+
+    def init_help(self, name: str) -> None:
+        self.file_buffer.open_help(name)
+

@@ -37,3 +37,15 @@ class ModelFacade(ABC):
     @abstractmethod
     def file_status(self) -> bool:
         pass
+
+    @abstractmethod
+    def help(self, status: bool):
+        pass
+
+    @abstractmethod
+    def help_state(self) -> bool:
+        pass
+
+    @abstractmethod
+    def init_help(self, name: str) -> None:
+        pass

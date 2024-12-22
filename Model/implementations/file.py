@@ -37,3 +37,16 @@ class ModelFile(IModelFile):
                     f.write(str(l) + "\n")
         except FileNotFoundError:
             pass
+
+    def open_help(self, name: str) -> None:
+        try:
+            with open(name, 'r') as f:
+                self.text.text.clear()
+                for line in f:
+                    if line[-1] == '\n' and len(line) > 1:
+                        line = line[:-1]
+                    elif line[-1] == '\n' and len(line) == 1:
+                        line = ""
+                    self.text.text.append(mystring.MyString(line))
+        except FileNotFoundError:
+            pass

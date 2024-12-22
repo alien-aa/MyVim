@@ -223,33 +223,37 @@ class CommandMode(ControllerState):
         ret_value = {"state": "current",
                      "exit": False,
                      "clear_cmd": False}
-        if curr_cmd == ":q\n":
+        if curr_cmd == ":q\n" and not self.model.help_state():
             if not self.model.file_status():
                 ret_value["exit"] = True
             else:
                 ret_value["state"] = "cmd"
                 ret_value["clear_cmd"] = True
-        elif curr_cmd == ":q!\n":
+        elif curr_cmd == ":q!\n" and not self.model.help_state():
             ret_value["exit"] = True
-        elif curr_cmd[:3] == ":o " and curr_cmd[-1] == '\n' and len(curr_cmd) > 5:
+        elif curr_cmd[:3] == ":o " and curr_cmd[-1] == '\n' and len(curr_cmd) > 5 and not self.model.help_state():
             self.model.files_action(curr_cmd[3:-1], 1)
             ret_value["state"] = "navigation"
             ret_value["clear_cmd"] = True
-        elif curr_cmd== ":w\n":
+        elif curr_cmd== ":w\n" and not self.model.help_state():
             self.model.files_action("", 3)
             ret_value["state"] = "cmd"
             ret_value["clear_cmd"] = True
-        elif curr_cmd == ":x\n":
+        elif curr_cmd == ":x\n" and not self.model.help_state():
             self.model.files_action("", 3)
             ret_value["exit"] = True
-        elif curr_cmd[:3] == ":w " and curr_cmd[-1] == '\n' and len(curr_cmd) > 5:
+        elif curr_cmd[:3] == ":w " and curr_cmd[-1] == '\n' and len(curr_cmd) > 5 and not self.model.help_state():
             self.model.files_action(curr_cmd[3:-1], 2)
             ret_value["exit"] = True
-        elif curr_cmd[:4] == ":wq!\n":
+        elif curr_cmd[:4] == ":wq!\n" and not self.model.help_state():
             self.model.files_action("", 2)
             ret_value["exit"] = True
-        elif len(curr_cmd) > 2 and curr_cmd[1:-1].isdigit() and curr_cmd[-1] == '\n':
+        elif len(curr_cmd) > 2 and curr_cmd[1:-1].isdigit() and curr_cmd[-1] == '\n' and not self.model.help_state():
             self.model.move_cursor(direction=-1, option=5, value=int(curr_cmd[1:-1]) - 1)
+            ret_value["state"] = "cmd"
+            ret_value["clear_cmd"] = True
+        elif curr_cmd== ":h\n" and not self.model.help_state():
+            self.model.help(True)
             ret_value["state"] = "cmd"
             ret_value["clear_cmd"] = True
         return ret_value

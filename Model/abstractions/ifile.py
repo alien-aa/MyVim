@@ -18,3 +18,6 @@ class IModelFile(ABC):
     def write_file(self, name: str) -> None:
         pass
 
+    @abstractmethod
+    def open_help(self, name: str) -> None:
+        pass
