@@ -27,7 +27,7 @@ class ControllerState(ABC):
         pass
 
     @abstractmethod
-    def clear_cmd(self):
+    def clear_cmd(self) -> None:
         pass
 
     @abstractmethod

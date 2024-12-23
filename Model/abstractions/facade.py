@@ -39,7 +39,7 @@ class ModelFacade(ABC):
         pass
 
     @abstractmethod
-    def help(self, status: bool):
+    def help(self, status: bool) -> None:
         pass
 
     @abstractmethod

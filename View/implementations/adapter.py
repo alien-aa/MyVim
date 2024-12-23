@@ -1,6 +1,5 @@
 import curses
 import curses.panel
-from functools import update_wrapper
 
 from View.abstractions.idisplay import IDisplay
 from View.abstractions.iinteractor import IInteractor
@@ -151,7 +150,7 @@ class Adapter(IDisplay, IInteractor):
             self.window.status_bar_panel.window().refresh()
             return True
 
-    def resize_editor(self):
+    def resize_editor(self) -> None:
         self.window.editor_panel.window().clear()
         height, width = self.window.screen.getmaxyx()
         height -= self.status_bar.height
@@ -159,7 +158,7 @@ class Adapter(IDisplay, IInteractor):
         self.window.editor_panel.show()
         self.window.editor_panel.window().refresh()
 
-    def update_statusbar(self):
+    def update_statusbar(self) -> None:
         height, width = self.window.status_bar_panel.window().getmaxyx()
         str_1 = f"| MODE: {self.status_bar.mode} | FILE: {self.status_bar.file} | {self.status_bar.command}"
         str_2 = f" | {self.status_bar.strings[0]}/{self.status_bar.strings[1]} |"
@@ -170,7 +169,7 @@ class Adapter(IDisplay, IInteractor):
         self.window.status_bar_panel.show()
         self.window.status_bar_panel.window().refresh()
 
-    def update_editor(self):
+    def update_editor(self) -> None:
         height, width = self.window.screen.getmaxyx()
         height -= self.status_bar.height
         on_screen = []
@@ -253,8 +252,6 @@ class Adapter(IDisplay, IInteractor):
         curses.setsyx(self.editor.cursor_on_screen[1], self.editor.cursor_on_screen[0])
 
 
-
-
 class Window:
     def __init__(self):
         self.screen = curses.initscr()
@@ -265,7 +262,7 @@ class Window:
     def __del__(self):
         curses.endwin()
 
-    def init_screen(self):
+    def init_screen(self) -> None:
         curses.noecho()
         curses.start_color()
         self.screen.leaveok(True)

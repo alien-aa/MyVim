@@ -27,9 +27,7 @@ class Model(ModelFacade):
         self.file_buffer = file_buffer
 
 
-
-
-    def move_cursor(self, direction: int | None, option: int, value: int | None) -> None:
+    def move_cursor(self, direction: int, option: int, value: int) -> None:
         """
         directions:
         None no direction (for some options)

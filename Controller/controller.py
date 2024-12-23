@@ -56,7 +56,7 @@ class Controller:
             self.curr_command = "BACKSPACE"
         return ret_value
 
-    def run(self, name: str):
+    def run(self, name: str) -> None:
         self.state.model.init_help(name)
         while True:
             self.state.show_state()

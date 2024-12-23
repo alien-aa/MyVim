@@ -31,7 +31,3 @@ class View(Observer):
             self.display.update_text(line_num=message["string_num"], text=message["string_value"], changes_type=1)
         elif message["action"] == "delete_string":
             self.display.update_text(line_num=message["string_num"], text="", changes_type=3)
-
-
-
-
