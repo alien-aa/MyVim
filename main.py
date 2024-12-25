@@ -9,7 +9,7 @@ from Model.implementations.file import ModelFile
 from View.implementations.adapter import Adapter
 from View.implementations.view import View
 
-help_filename = "C:\\Users\\alien_aa\\PycharmProjects\\MyVim\\help.txt"
+help_filename = "help.txt" #PATH TO HELP FILE
 
 subject = ModelSubject()
 adapter = Adapter()
